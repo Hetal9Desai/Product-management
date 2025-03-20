@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product List</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Product List</h2>
+        <div>
+          <a href="product1.html?mode=add" class="btn btn-primary mr-2"
+            >Add Product</a
+          >
+          <button class="btn btn-warning" onclick="clearStorage()">
+            Clear Storage
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtering Section -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Filters</h5>
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <input
+                type="text"
+                id="filterId"
+                class="form-control"
+                placeholder="Filter by Product ID"
+                oninput="renderProductTable()"
+              />
+            </div>
+            <div class="form-group col-md-3">
+              <input
+                type="text"
+                id="filterName"
+                class="form-control"
+                placeholder="Filter by Product Name"
+                oninput="renderProductTable()"
+              />
+            </div>
+            <div class="form-group col-md-3">
+              <input
+                type="text"
+                id="filterDescription"
+                class="form-control"
+                placeholder="Filter by Description"
+                oninput="renderProductTable()"
+              />
+            </div>
+            <div class="form-group col-md-3">
+              <input
+                type="text"
+                id="filterPrice"
+                class="form-control"
+                placeholder="Filter by Price"
+                oninput="renderProductTable()"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sorting Section -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Sort Options</h5>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="sortBy">Sort By:</label>
+              <select
+                id="sortBy"
+                class="form-control"
+                onchange="renderProductTable()"
+              >
+                <option value="">None</option>
+                <option value="id">Product ID</option>
+                <option value="name">Product Name</option>
+                <option value="price">Price</option>
+                <option value="description">Description</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="sortOrder">Sort Order:</label>
+              <select
+                id="sortOrder"
+                class="form-control"
+                onchange="renderProductTable()"
+              >
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th>Product ID</th>
+              <th>Product Name</th>
+              <th>Image</th>
+              <th>Price</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
