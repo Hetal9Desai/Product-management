@@ -1,6 +1,6 @@
 # Product Management System
 
-This is a **Product Management System** built using **HTML, CSS, JavaScript, and Bootstrap**. The application allows users to create, update, view, and manage products with **localStorage** for data persistence. It also supports **filtering, sorting, and routing for product view/edit** operations.
+This is a **Product Management System** built using **HTML, Bootstrap for CSS, and JavaScript**. The application allows users to create, update, view, and manage products with **localStorage** for data persistence. It also supports **filtering, sorting, and routing for product view/edit** operations.
 
 ## Features
 
