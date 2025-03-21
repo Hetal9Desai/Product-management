@@ -12,15 +12,20 @@
 
   <body>
     <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Product List</h2>
-        <div>
-          <a href="product1.html?mode=add" class="btn btn-primary mr-2"
-            >Add Product</a
-          >
-          <button class="btn btn-warning" onclick="clearStorage()">
-            Clear Storage
-          </button>
+      <!-- Header Section in Card -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Product List</h2>
+            <div>
+              <a href="product.html?mode=add" class="btn btn-primary mr-2"
+                >Add Product</a
+              >
+              <button class="btn btn-warning" onclick="clearStorage()">
+                Clear Storage
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -66,6 +71,11 @@
               />
             </div>
           </div>
+          <div class="text-left">
+            <button class="btn btn-secondary" onclick="clearFilters()">
+              Clear Filters
+            </button>
+          </div>
         </div>
       </div>
 
@@ -103,20 +113,26 @@
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-          <thead class="thead-light">
-            <tr>
-              <th>Product ID</th>
-              <th>Product Name</th>
-              <th>Image</th>
-              <th>Price</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="productTableBody"></tbody>
-        </table>
+      <!-- Table Section -->
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Product Table</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped mb-0">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Product ID</th>
+                  <th scope="col">Product Name</th>
+                  <th scope="col">Image</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </body>
