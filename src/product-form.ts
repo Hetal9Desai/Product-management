@@ -2,10 +2,12 @@ import { Product } from "./types";
 import { loadProducts, saveProducts } from "./storage";
 import { showSuccessModal } from "./modal";
 
+// Product array and state tracking
 let products: Product[] = [];
 let editingProductId: string | null = null;
 let isEditMode = false;
 
+// Initialize everything on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   products = loadProducts();
 
@@ -44,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLiveValidation();
 });
 
+// Handle form submission
 function handleFormSubmit(e: Event): void {
   e.preventDefault();
 
@@ -55,14 +58,14 @@ function handleFormSubmit(e: Event): void {
   const image = document.getElementById("productImage") as HTMLInputElement;
 
   let isValid = true;
-
+  // Validate name
   if (!name.value.trim() || name.value.trim().length < 2) {
     name.classList.add("is-invalid");
     isValid = false;
   } else {
     name.classList.remove("is-invalid");
   }
-
+  // Validate price
   if (
     !price.value.trim() ||
     isNaN(Number(price.value)) ||
@@ -73,14 +76,14 @@ function handleFormSubmit(e: Event): void {
   } else {
     price.classList.remove("is-invalid");
   }
-
+  // Validate description
   if (!description.value.trim() || description.value.trim().length < 10) {
     description.classList.add("is-invalid");
     isValid = false;
   } else {
     description.classList.remove("is-invalid");
   }
-
+  // Validate image
   const file = image.files?.[0];
   if (!isEditMode && !file) {
     image.classList.add("is-invalid");
@@ -119,7 +122,7 @@ function handleFormSubmit(e: Event): void {
     }
   }
 }
-
+// Save or update product
 function saveProduct(
   name: string,
   image: string,
@@ -154,7 +157,7 @@ function saveProduct(
     : "Product added successfully!";
   showSuccessModal(message, true);
 }
-
+// Preview selected image
 function previewImage(event: Event): void {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -176,7 +179,7 @@ function previewImage(event: Event): void {
     reader.readAsDataURL(file);
   }
 }
-
+// Real-time validation setup
 function setupLiveValidation(): void {
   const name = document.getElementById("productName") as HTMLInputElement;
   const price = document.getElementById("productPrice") as HTMLInputElement;
