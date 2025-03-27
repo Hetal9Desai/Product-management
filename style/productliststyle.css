@@ -31,3 +31,36 @@ label {
   font-weight: 500;
   border-radius: 0.5rem;
 }
+
+.scrollable-right {
+  overflow-y: auto;
+  max-height: 70vh;
+  padding-bottom: 50px;
+}
+
+.pagination-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+.pagination .page-item {
+  margin: 0 5px;
+}
+
+.pagination .page-link {
+  padding: 10px 20px;
+  text-align: center;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+}
+
+.card {
+  margin-bottom: 20px;
+}

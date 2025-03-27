@@ -1,3 +1,11 @@
+import $ from "jquery";
+
+declare global {
+  interface JQuery {
+    modal(action: string): JQuery;
+  }
+}
+
 export function showSuccessModal(
   message: string,
   redirect: boolean = false,
@@ -9,12 +17,11 @@ export function showSuccessModal(
   if (modal && messageEl) {
     messageEl.textContent = message;
 
-    // @ts-ignore: Assuming jQuery + Bootstrap modal is available globally
     $("#successModal").modal("show");
 
     setTimeout(() => {
-      // @ts-ignore
       $("#successModal").modal("hide");
+
       if (redirect) {
         window.location.href = redirectURL;
       }

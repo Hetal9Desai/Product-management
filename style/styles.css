@@ -101,7 +101,6 @@ body {
   border-radius: 0.5rem;
 }
 
-/* Sticky sidebar */
 @media (min-width: 768px) {
   .sticky-sidebar {
     position: sticky;
@@ -115,7 +114,6 @@ body {
   }
 }
 
-/* Sort & filter section headers */
 .card-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -123,23 +121,19 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Better spacing inside card-body */
 .card-body {
   padding: 1.25rem 1.5rem;
 }
 
-/* Input spacing inside filter cards */
 .form-group input,
 .form-group select {
   margin-bottom: 0.75rem;
 }
 
-/* Modal button spacing */
 .modal-footer .btn + .btn {
   margin-left: 0.5rem;
 }
 
-/* Filter button */
 .btn-block {
   padding: 0.5rem 1rem;
 }

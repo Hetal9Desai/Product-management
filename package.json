@@ -16,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/Hetal9Desai/Product-management/issues"
   },
-  "homepage": "https://github.com/Hetal9Desai/Product-management#readme"
+  "homepage": "https://github.com/Hetal9Desai/Product-management#readme",
+  "devDependencies": {
+    "@types/jquery": "^3.5.32"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
+  }
 }
