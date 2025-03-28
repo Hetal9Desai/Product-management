@@ -95,6 +95,7 @@ body {
   font-size: 1.1rem;
   font-weight: 500;
   color: #888;
+  font-weight: 700;
 }
 
 .modal-content {
@@ -132,6 +133,7 @@ body {
 
 .modal-footer .btn + .btn {
   margin-left: 0.5rem;
+  padding: 10px 30px;
 }
 
 .btn-block {

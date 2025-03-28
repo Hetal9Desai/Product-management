@@ -4,45 +4,78 @@ let products = [];
 let deleteProductId = null;
 let currentPage = 1;
 const productsPerPage = 4;
+let deleteModalInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
   renderProductCards();
+
+  // Show the "Add Product" button if it exists.
   const addBtn = document.getElementById("addProductBtn");
   if (addBtn) {
     addBtn.classList.remove("d-none");
   }
+
+  // Attach event listeners to filters and sort controls so that changes trigger a re-render.
+  document.getElementById("filterId").addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  document.getElementById("filterName").addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  document.getElementById("filterDescription").addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  document.getElementById("filterPrice").addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  document.getElementById("sortBy").addEventListener("change", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  document.getElementById("sortOrder").addEventListener("change", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
 });
 
-// Load products from localStorage
+// Load products from localStorage.
 function loadProducts() {
   const storedProducts = localStorage.getItem("products");
   products = storedProducts ? JSON.parse(storedProducts) : [];
 }
 
-// Save products to localStorage
+// Save products to localStorage.
 function saveProducts() {
   localStorage.setItem("products", JSON.stringify(products));
 }
 
-// Render product cards with filtering, sorting, and pagination
+// Render product cards with filtering, sorting, and pagination.
 function renderProductCards() {
   const container = document.getElementById("productCardContainer");
   const noProductsMessage = document.getElementById("noProductsMessage");
   container.innerHTML = "";
 
-  // Get filter values
-  const filterId = document.getElementById("filterId").value;
-  const filterName = document.getElementById("filterName").value.toLowerCase();
+  // Get filter values.
+  const filterId = document.getElementById("filterId").value.trim();
+  const filterName = document
+    .getElementById("filterName")
+    .value.trim()
+    .toLowerCase();
   const filterDescription = document
     .getElementById("filterDescription")
-    .value.toLowerCase();
-  const filterPrice = document.getElementById("filterPrice").value;
+    .value.trim()
+    .toLowerCase();
+  const filterPrice = document.getElementById("filterPrice").value.trim();
 
-  // Filter products based on criteria
+  // Filter products based on criteria.
   let filteredProducts = products.filter((product) => {
     return (
-      (!filterId || product.id.includes(filterId)) &&
+      (!filterId || product.id.toString().includes(filterId)) &&
       (!filterName || product.name.toLowerCase().includes(filterName)) &&
       (!filterDescription ||
         product.description.toLowerCase().includes(filterDescription)) &&
@@ -50,7 +83,7 @@ function renderProductCards() {
     );
   });
 
-  // Sorting (if a sort key is selected)
+  // Sorting (if a sort key is selected).
   const sortKey = document.getElementById("sortBy").value;
   const sortOrder = document.getElementById("sortOrder").value;
   if (sortKey) {
@@ -69,7 +102,7 @@ function renderProductCards() {
     });
   }
 
-  // Show "no products" message if none found
+  // Show "no products" message if none found.
   if (filteredProducts.length === 0) {
     const filters = [
       { id: "filterId", label: "Product ID" },
@@ -91,7 +124,7 @@ function renderProductCards() {
     noProductsMessage.style.display = "none";
   }
 
-  // Pagination calculations
+  // Pagination calculations.
   const totalProducts = filteredProducts.length;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   if (currentPage > totalPages) currentPage = totalPages;
@@ -103,7 +136,15 @@ function renderProductCards() {
     startIndex + productsPerPage
   );
 
-  // Render each product card for the current page
+  // Update header pagination info dynamically.
+  const paginationInfo = document.getElementById("paginationInfo");
+  if (paginationInfo) {
+    const startCount = totalProducts > 0 ? startIndex + 1 : 0;
+    const endCount = Math.min(startIndex + productsPerPage, totalProducts);
+    paginationInfo.textContent = `Products ${startCount}-${endCount} of ${totalProducts}`;
+  }
+
+  // Render each product card for the current page.
   paginatedProducts.forEach((product) => {
     const card = document.createElement("div");
     card.className = "col-md-6 mb-4";
@@ -125,30 +166,26 @@ function renderProductCards() {
     container.appendChild(card);
   });
 
-  // Update pagination controls
+  // Update pagination controls.
   renderPaginationControls(totalProducts);
 }
 
-// Render pagination controls dynamically using the existing <ul class="pagination">
 function renderPaginationControls(totalProducts) {
   const paginationContainer = document.querySelector("ul.pagination");
   if (!paginationContainer) return;
 
-  // If no products, hide pagination
   if (totalProducts === 0) {
     paginationContainer.style.display = "none";
     return;
   } else {
-    paginationContainer.style.display = "flex"; // Show pagination
+    paginationContainer.style.display = "flex";
   }
 
-  // Pagination container: apply necessary styling for fixed position
   paginationContainer.classList.add("pagination-container");
-
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   paginationContainer.innerHTML = "";
 
-  // Previous button
+  // Previous button.
   const prevLi = document.createElement("li");
   prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
   const prevLink = document.createElement("a");
@@ -159,7 +196,7 @@ function renderPaginationControls(totalProducts) {
   prevLi.appendChild(prevLink);
   paginationContainer.appendChild(prevLi);
 
-  // Page number buttons
+  // Page number buttons.
   for (let i = 1; i <= totalPages; i++) {
     const li = document.createElement("li");
     li.className = `page-item ${i === currentPage ? "active" : ""}`;
@@ -172,7 +209,7 @@ function renderPaginationControls(totalProducts) {
     paginationContainer.appendChild(li);
   }
 
-  // Next button
+  // Next button.
   const nextLi = document.createElement("li");
   nextLi.className = `page-item ${
     currentPage === totalPages ? "disabled" : ""
@@ -185,7 +222,7 @@ function renderPaginationControls(totalProducts) {
   nextLi.appendChild(nextLink);
   paginationContainer.appendChild(nextLi);
 
-  // Attach event listeners to the pagination links
+  // Attach event listeners to the pagination links.
   paginationContainer.querySelectorAll("a.page-link").forEach((link) => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
@@ -196,54 +233,52 @@ function renderPaginationControls(totalProducts) {
     });
   });
 }
-
-// Change page and re-render product cards
+// Function to handle page change
 function changePage(page) {
-  // Validate the requested page against filtered products count
-  const filterId = document.getElementById("filterId").value;
-  const filterName = document.getElementById("filterName").value.toLowerCase();
-  const filterDescription = document
-    .getElementById("filterDescription")
-    .value.toLowerCase();
-  const filterPrice = document.getElementById("filterPrice").value;
-  const totalFilteredProducts = products.filter((product) => {
-    return (
-      (!filterId || product.id.includes(filterId)) &&
-      (!filterName || product.name.toLowerCase().includes(filterName)) &&
-      (!filterDescription ||
-        product.description.toLowerCase().includes(filterDescription)) &&
-      (!filterPrice || product.price.toString().includes(filterPrice))
-    );
-  }).length;
-  let totalPages = Math.ceil(totalFilteredProducts / productsPerPage);
-  if (totalPages < 1) totalPages = 1;
-  if (page < 1 || page > totalPages) return;
   currentPage = page;
   renderProductCards();
 }
 
-// Show delete confirmation modal (requires jQuery & Bootstrap modal)
 function confirmDelete(productId) {
   deleteProductId = productId;
-  $("#deleteConfirmModal").modal("show");
+  const modalEl = document.getElementById("deleteConfirmModal");
+  if (modalEl) {
+    deleteModalInstance = new bootstrap.Modal(modalEl);
+    deleteModalInstance.show();
+  }
 }
 
-// Delete handler for confirmation button
 const confirmBtn = document.getElementById("confirmDeleteBtn");
 if (confirmBtn) {
   confirmBtn.addEventListener("click", () => {
+    console.log("Confirm delete button clicked");
     if (deleteProductId) {
+      console.log("Deleting product with ID:", deleteProductId);
+      // Proceed with the deletion process
       products = products.filter((product) => product.id !== deleteProductId);
       saveProducts();
       renderProductCards();
-      $("#deleteConfirmModal").modal("hide");
+      if (deleteModalInstance) {
+        deleteModalInstance.hide(); // Close the delete modal
+      }
+      // Show success modal
+      console.log("Showing success modal after deletion");
       showSuccessModal("Product deleted successfully!");
       deleteProductId = null;
+    } else {
+      console.log("No product to delete. deleteProductId is null.");
     }
   });
 }
 
-// Clear filters and reset to page 1
+function showSuccessModal(message) {
+  const successModal = new bootstrap.Modal(
+    document.getElementById("successModal")
+  );
+  document.getElementById("successModalMessage").textContent = message;
+  successModal.show();
+}
+
 function clearFilters() {
   document.getElementById("filterId").value = "";
   document.getElementById("filterName").value = "";
@@ -255,6 +290,6 @@ function clearFilters() {
   renderProductCards();
 }
 
-// Expose functions to the global scope if needed
 window.clearFilters = clearFilters;
 window.confirmDelete = confirmDelete;
+// window.showSuccessModal = showSuccessModal;
