@@ -1,11 +1,10 @@
 "use strict";
-function showSuccessModal(
+export function showSuccessModal(
   message,
   redirect = true,
   redirectURL = "index.html"
 ) {
   let successModalEl = document.getElementById("successModal");
-
   if (!successModalEl) {
     const modalHTML = `
       <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
@@ -21,7 +20,6 @@ function showSuccessModal(
           </div>
         </div>
       </div>`;
-
     document.body.insertAdjacentHTML("beforeend", modalHTML);
     successModalEl = document.getElementById("successModal");
   } else {
@@ -32,14 +30,14 @@ function showSuccessModal(
       console.error("Success message element not found!");
     }
   }
-
-  const modalInstance = new bootstrap.Modal(successModalEl);
-  modalInstance.show();
-
-  setTimeout(() => {
-    modalInstance.hide();
-    if (redirect) {
-      window.location.href = redirectURL;
-    }
-  }, 1500);
+  if (successModalEl) {
+    const modalInstance = new bootstrap.Modal(successModalEl);
+    modalInstance.show();
+    setTimeout(() => {
+      modalInstance.hide();
+      if (redirect) {
+        window.location.href = redirectURL;
+      }
+    }, 1500);
+  }
 }

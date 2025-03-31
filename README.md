@@ -42,5 +42,34 @@ This is a **Product Management System** built using **HTML, CSS, Bootstrap, and 
 - **Sort Products:** Choose a sorting option (ID, Name, or Price) from the dropdown.
 - **Clear Storage:** Click **Clear Storage** to remove all stored products.
 
-TEST LINK :
+## Installation and Running the Project
+
+1. Clone the Repository:
+   Open your terminal and run:
+   git clone https://github.com/Hetal9Desai/Product-management
+
+2. Navigate into the Project Directory:
+   cd product-management-system
+
+3. Install Dependencies:
+   If your project uses npm for package management, install the dependencies by running:
+   npm install
+
+4. Compile the TypeScript Files:
+   Your package.json includes the following scripts:
+   npm run build
+   This runs the TypeScript compiler (tsc) and outputs the compiled JavaScript files (usually into a dist folder as specified in your tsconfig.json).
+
+5. Watch Mode:
+   npm run watch This command starts the TypeScript compiler in watch mode, so it automatically recompiles your TypeScript files whenever changes are made.
+
+6. Serve the Project: You have two options to view the project in your browser:
+   a. Open Directly: Open the index.html file directly in your browser.
+
+   b. Using a Local Server: It’s recommended to run the project on a local server to avoid potential issues with modules and CORS. For example, you can use VSCode’s Live Server extension:
+
+   Right-click on index.html and choose "Open with Live Server".
+
+### TEST LINK :
+
 https://deploy-preview-1--silly-kulfi-c7c12b.netlify.app/

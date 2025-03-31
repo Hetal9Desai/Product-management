@@ -1,15 +1,17 @@
-function showSuccessModal(
+"use strict";
+
+declare const bootstrap: any;
+
+export function showSuccessModal(
   message: string,
   redirect: boolean = true,
   redirectURL: string = "index.html"
 ): void {
-  let successModalEl = document.getElementById(
-    "successModal"
-  ) as HTMLElement | null;
+  let successModalEl: HTMLElement | null =
+    document.getElementById("successModal");
 
-  // If the modal doesn't exist in the DOM, create and insert it
   if (!successModalEl) {
-    const modalHTML = `
+    const modalHTML: string = `
       <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content text-center">
@@ -25,11 +27,9 @@ function showSuccessModal(
       </div>`;
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
-    successModalEl = document.getElementById(
-      "successModal"
-    ) as HTMLElement | null;
+    successModalEl = document.getElementById("successModal");
   } else {
-    const msg = document.getElementById("successMessage") as HTMLElement | null;
+    const msg: HTMLElement | null = document.getElementById("successMessage");
     if (msg) {
       msg.textContent = message;
     } else {
@@ -37,19 +37,15 @@ function showSuccessModal(
     }
   }
 
-  // Check if successModalEl is still null after trying to create it
-  if (!successModalEl) {
-    console.error("Modal element could not be found or created.");
-    return;
+  if (successModalEl) {
+    const modalInstance = new bootstrap.Modal(successModalEl);
+    modalInstance.show();
+
+    setTimeout(() => {
+      modalInstance.hide();
+      if (redirect) {
+        window.location.href = redirectURL;
+      }
+    }, 1500);
   }
-
-  const modalInstance = new bootstrap.Modal(successModalEl);
-  modalInstance.show();
-
-  setTimeout(() => {
-    modalInstance.hide();
-    if (redirect) {
-      window.location.href = redirectURL;
-    }
-  }, 1500);
 }

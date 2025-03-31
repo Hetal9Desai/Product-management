@@ -1,11 +1,14 @@
 "use strict";
-// Product array and state tracking
+import {
+  loadProducts as loadFromStorage,
+  saveProducts as saveToStorage,
+} from "./storage.js";
+import { showSuccessModal } from "./modal.js";
 let products = [];
 let editingProductId = null;
 let isEditMode = false;
-// Initialize everything on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
+  products = loadFromStorage();
   const urlParams = new URLSearchParams(window.location.search);
   const mode = urlParams.get("mode");
   const id = urlParams.get("id");
@@ -14,82 +17,90 @@ document.addEventListener("DOMContentLoaded", () => {
     editingProductId = id;
     const product = products.find((p) => p.id === editingProductId);
     if (product) {
-      document.getElementById("pageHeader").textContent = "Edit Product";
-      document.getElementById("productName").value = product.name;
-      document.getElementById("productPrice").value = product.price;
-      document.getElementById("productDescription").value = product.description;
-      document.getElementById("imagePreview").src = product.image;
+      const pageHeader = document.getElementById("pageHeader");
+      if (pageHeader) {
+        pageHeader.textContent = "Edit Product";
+      }
+      const productName = document.getElementById("productName");
+      if (productName) {
+        productName.value = product.name;
+      }
+      const productPrice = document.getElementById("productPrice");
+      if (productPrice) {
+        productPrice.value = product.price;
+      }
+      const productDescription = document.getElementById("productDescription");
+      if (productDescription) {
+        productDescription.value = product.description;
+      }
+      const imagePreview = document.getElementById("imagePreview");
+      if (imagePreview) {
+        imagePreview.src = product.image;
+      }
     }
   }
-  document
-    .getElementById("productForm")
-    .addEventListener("submit", handleFormSubmit);
-  document
-    .getElementById("productImage")
-    .addEventListener("change", previewImage);
+  const productForm = document.getElementById("productForm");
+  if (productForm) {
+    productForm.addEventListener("submit", handleFormSubmit);
+  }
+  const productImage = document.getElementById("productImage");
+  if (productImage) {
+    productImage.addEventListener("change", previewImage);
+  }
   setupLiveValidation();
 });
-// Load products from localStorage
-function loadProducts() {
-  const storedProducts = localStorage.getItem("products");
-  products = storedProducts ? JSON.parse(storedProducts) : [];
-}
-// Save products to localStorage
-function saveProducts() {
-  localStorage.setItem("products", JSON.stringify(products));
-}
-// Handle form submission
-function handleFormSubmit(e) {
+const handleFormSubmit = (e) => {
   var _a;
   e.preventDefault();
-  const name = document.getElementById("productName");
-  const price = document.getElementById("productPrice");
-  const description = document.getElementById("productDescription");
-  const image = document.getElementById("productImage");
+  const nameEl = document.getElementById("productName");
+  const priceEl = document.getElementById("productPrice");
+  const descriptionEl = document.getElementById("productDescription");
+  const imageEl = document.getElementById("productImage");
+  if (!nameEl || !priceEl || !descriptionEl || !imageEl) return;
   let isValid = true;
   // Validate name
-  if (!name.value.trim() || name.value.trim().length < 2) {
-    name.classList.add("is-invalid");
+  if (!nameEl.value.trim() || nameEl.value.trim().length < 2) {
+    nameEl.classList.add("is-invalid");
     isValid = false;
   } else {
-    name.classList.remove("is-invalid");
+    nameEl.classList.remove("is-invalid");
   }
   // Validate price
   if (
-    !price.value.trim() ||
-    isNaN(Number(price.value)) ||
-    Number(price.value) <= 0
+    !priceEl.value.trim() ||
+    isNaN(Number(priceEl.value)) ||
+    Number(priceEl.value) <= 0
   ) {
-    price.classList.add("is-invalid");
+    priceEl.classList.add("is-invalid");
     isValid = false;
   } else {
-    price.classList.remove("is-invalid");
+    priceEl.classList.remove("is-invalid");
   }
   // Validate description
-  if (!description.value.trim() || description.value.trim().length < 10) {
-    description.classList.add("is-invalid");
+  if (!descriptionEl.value.trim() || descriptionEl.value.trim().length < 10) {
+    descriptionEl.classList.add("is-invalid");
     isValid = false;
   } else {
-    description.classList.remove("is-invalid");
+    descriptionEl.classList.remove("is-invalid");
   }
   // Validate image
-  const file = (_a = image.files) === null || _a === void 0 ? void 0 : _a[0];
+  const file = (_a = imageEl.files) === null || _a === void 0 ? void 0 : _a[0];
   if (!isEditMode && !file) {
-    image.classList.add("is-invalid");
+    imageEl.classList.add("is-invalid");
     isValid = false;
   } else if (file && (!file.type.startsWith("image/") || file.size > 1048576)) {
-    image.classList.add("is-invalid");
+    imageEl.classList.add("is-invalid");
     isValid = false;
   } else {
-    image.classList.remove("is-invalid");
+    imageEl.classList.remove("is-invalid");
   }
   if (!isValid) return;
-  const nameValue = name.value.trim();
-  const priceValue = price.value.trim();
-  const descriptionValue = description.value.trim();
+  const nameValue = nameEl.value.trim();
+  const priceValue = priceEl.value.trim();
+  const descriptionValue = descriptionEl.value.trim();
   if (file) {
     const reader = new FileReader();
-    reader.onload = function (event) {
+    reader.onload = (event) => {
       var _a;
       const result =
         (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
@@ -109,8 +120,7 @@ function handleFormSubmit(e) {
       );
     }
   }
-}
-// Save or update product
+};
 function saveProduct(name, image, price, description) {
   if (editingProductId) {
     const index = products.findIndex((p) => p.id === editingProductId);
@@ -132,63 +142,69 @@ function saveProduct(name, image, price, description) {
       description,
     });
   }
-  saveProducts();
+  saveToStorage(products);
   const message = editingProductId
     ? "Product updated successfully!"
     : "Product added successfully!";
   showSuccessModal(message, true);
 }
-// Preview selected image
 function previewImage(event) {
   var _a;
-  const input = event.target;
-  const file = (_a = input.files) === null || _a === void 0 ? void 0 : _a[0];
+  const target = event.target;
+  const file = (_a = target.files) === null || _a === void 0 ? void 0 : _a[0];
   if (file && file.size > 1048576) {
     alert("Image file size should not exceed 1MB.");
-    input.value = "";
-    document.getElementById("imagePreview").src =
-      "https://placehold.co/300x300?text=Product+Image&font=roboto";
+    target.value = "";
+    const imagePreview = document.getElementById("imagePreview");
+    if (imagePreview) {
+      imagePreview.src =
+        "https://placehold.co/300x300?text=Product+Image&font=roboto";
+    }
     return;
   }
   const reader = new FileReader();
-  reader.onload = function () {
-    document.getElementById("imagePreview").src = reader.result;
+  reader.onload = () => {
+    const imagePreview = document.getElementById("imagePreview");
+    if (imagePreview) {
+      imagePreview.src = reader.result;
+    }
   };
   if (file) {
     reader.readAsDataURL(file);
   }
 }
-// Real-time validation setup
 function setupLiveValidation() {
-  const name = document.getElementById("productName");
-  const price = document.getElementById("productPrice");
-  const description = document.getElementById("productDescription");
-  const image = document.getElementById("productImage");
-  name.addEventListener("input", () => {
-    const value = name.value.trim();
-    name.classList.toggle("is-invalid", value.length < 2);
+  const nameEl = document.getElementById("productName");
+  const priceEl = document.getElementById("productPrice");
+  const descriptionEl = document.getElementById("productDescription");
+  const imageEl = document.getElementById("productImage");
+  if (!nameEl || !priceEl || !descriptionEl || !imageEl) return;
+  nameEl.addEventListener("input", () => {
+    const value = nameEl.value.trim();
+    nameEl.classList.toggle("is-invalid", value.length < 2);
   });
-  price.addEventListener("input", () => {
-    const value = parseFloat(price.value);
-    price.classList.toggle("is-invalid", isNaN(value) || value <= 0);
+  priceEl.addEventListener("input", () => {
+    const value = parseFloat(priceEl.value);
+    priceEl.classList.toggle("is-invalid", isNaN(value) || value <= 0);
   });
-  description.addEventListener("input", () => {
-    const value = description.value.trim();
-    description.classList.toggle("is-invalid", value.length < 10);
+  descriptionEl.addEventListener("input", () => {
+    const value = descriptionEl.value.trim();
+    descriptionEl.classList.toggle("is-invalid", value.length < 10);
   });
-  image.addEventListener("change", () => {
+  imageEl.addEventListener("change", () => {
     var _a;
-    const file = (_a = image.files) === null || _a === void 0 ? void 0 : _a[0];
+    const file =
+      (_a = imageEl.files) === null || _a === void 0 ? void 0 : _a[0];
     const isAddMode = !window.location.search.includes("edit");
     if (!file && isAddMode) {
-      image.classList.add("is-invalid");
+      imageEl.classList.add("is-invalid");
     } else if (
       file &&
       (!file.type.startsWith("image/") || file.size > 1048576)
     ) {
-      image.classList.add("is-invalid");
+      imageEl.classList.add("is-invalid");
     } else {
-      image.classList.remove("is-invalid");
+      imageEl.classList.remove("is-invalid");
     }
   });
 }

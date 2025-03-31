@@ -1,120 +1,105 @@
+"use strict";
+
+// Declare the global bootstrap variable to avoid TypeScript errors
+declare var bootstrap: any;
+
+import {
+  loadProducts as loadFromStorage,
+  saveProducts as saveToStorage,
+} from "./storage.js";
+import { showSuccessModal } from "./modal.js";
 import { Product } from "./types";
-import { loadProducts, saveProducts } from "./storage";
-import bootstrap, { Modal } from "bootstrap";
 
 let products: Product[] = [];
 let deleteProductId: string | null = null;
-let deleteModalInstance: Modal | null = null;
 let currentPage: number = 1;
 const productsPerPage: number = 4;
+let deleteModalInstance: any = null;
 
-type SortableKey = "id" | "name" | "price";
-// Show the "Add Product" button if it exists.
 document.addEventListener("DOMContentLoaded", () => {
-  products = loadProducts();
+  products = loadFromStorage();
   renderProductCards();
 
-  const addBtn = document.getElementById("addProductBtn") as HTMLElement | null;
+  // Show the "Add Product" button if it exists.
+  const addBtn = document.getElementById("addProductBtn");
   if (addBtn) {
     addBtn.classList.remove("d-none");
   }
 
-  const confirmDeleteBtn = document.getElementById(
-    "confirmDeleteBtn"
-  ) as HTMLElement | null;
-  confirmDeleteBtn?.addEventListener("click", handleDelete);
-});
-// Attach event listeners to filters and sort controls so that changes trigger a re-render.
-document.addEventListener("DOMContentLoaded", () => {
-  // Attach event listeners to filters and sort controls so that changes trigger a re-render.
-  const filterId = document.getElementById(
+  // Attach event listeners to filters and sort controls.
+  const filterIdEl = document.getElementById(
     "filterId"
   ) as HTMLInputElement | null;
-  const filterName = document.getElementById(
+  const filterNameEl = document.getElementById(
     "filterName"
   ) as HTMLInputElement | null;
-  const filterDescription = document.getElementById(
+  const filterDescriptionEl = document.getElementById(
     "filterDescription"
   ) as HTMLInputElement | null;
-  const filterPrice = document.getElementById(
+  const filterPriceEl = document.getElementById(
     "filterPrice"
   ) as HTMLInputElement | null;
-  const sortBy = document.getElementById("sortBy") as HTMLSelectElement | null;
-  const sortOrder = document.getElementById(
+  const sortByEl = document.getElementById(
+    "sortBy"
+  ) as HTMLSelectElement | null;
+  const sortOrderEl = document.getElementById(
     "sortOrder"
   ) as HTMLSelectElement | null;
 
-  // Ensure all elements are found before adding event listeners
-  if (filterId) {
-    filterId.addEventListener("input", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
-
-  if (filterName) {
-    filterName.addEventListener("input", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
-
-  if (filterDescription) {
-    filterDescription.addEventListener("input", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
-
-  if (filterPrice) {
-    filterPrice.addEventListener("input", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
-
-  if (sortBy) {
-    sortBy.addEventListener("change", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
-
-  if (sortOrder) {
-    sortOrder.addEventListener("change", () => {
-      currentPage = 1;
-      renderProductCards();
-    });
-  }
+  filterIdEl?.addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  filterNameEl?.addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  filterDescriptionEl?.addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  filterPriceEl?.addEventListener("input", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  sortByEl?.addEventListener("change", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
+  sortOrderEl?.addEventListener("change", () => {
+    currentPage = 1;
+    renderProductCards();
+  });
 });
 
-// Render product cards with filtering, sorting, and pagination
 function renderProductCards(): void {
-  const container = document.getElementById(
-    "productCardContainer"
-  ) as HTMLElement;
-  const noProductsMessage = document.getElementById(
-    "noProductsMessage"
-  ) as HTMLElement;
+  const container = document.getElementById("productCardContainer");
+  const noProductsMessage = document.getElementById("noProductsMessage");
+  if (!container || !noProductsMessage) return;
   container.innerHTML = "";
 
-  // Get filter values
-  const filterId = (document.getElementById("filterId") as HTMLInputElement)
-    .value;
+  // Get filter values.
+  const filterId = (
+    document.getElementById("filterId") as HTMLInputElement
+  ).value.trim();
   const filterName = (
     document.getElementById("filterName") as HTMLInputElement
-  ).value.toLowerCase();
+  ).value
+    .trim()
+    .toLowerCase();
   const filterDescription = (
     document.getElementById("filterDescription") as HTMLInputElement
-  ).value.toLowerCase();
+  ).value
+    .trim()
+    .toLowerCase();
   const filterPrice = (
     document.getElementById("filterPrice") as HTMLInputElement
-  ).value;
+  ).value.trim();
 
-  // Filter products based on criteria
+  // Filter products.
   let filteredProducts = products.filter((product) => {
     return (
-      (!filterId || product.id.includes(filterId)) &&
+      (!filterId || product.id.toString().includes(filterId)) &&
       (!filterName || product.name.toLowerCase().includes(filterName)) &&
       (!filterDescription ||
         product.description.toLowerCase().includes(filterDescription)) &&
@@ -122,33 +107,30 @@ function renderProductCards(): void {
     );
   });
 
-  // Sorting (if a sort key is selected)
-  const sortKey = (document.getElementById("sortBy") as HTMLSelectElement)
-    .value as SortableKey;
-  const sortOrder = (document.getElementById("sortOrder") as HTMLSelectElement)
-    .value;
+  // Sorting.
+  const sortByEl = document.getElementById("sortBy") as HTMLSelectElement;
+  const sortOrderEl = document.getElementById("sortOrder") as HTMLSelectElement;
+  const sortKey = sortByEl.value;
+  const sortOrder = sortOrderEl.value;
   if (sortKey) {
     filteredProducts.sort((a, b) => {
-      const aVal =
-        sortKey === "price"
-          ? parseFloat(String(a[sortKey]))
-          : (a[sortKey] as string).toLowerCase();
-      const bVal =
-        sortKey === "price"
-          ? parseFloat(String(b[sortKey]))
-          : (b[sortKey] as string).toLowerCase();
-
-      return sortOrder === "asc"
-        ? aVal > bVal
-          ? 1
-          : -1
-        : aVal < bVal
-        ? 1
-        : -1;
+      let aValue: number | string, bValue: number | string;
+      if (sortKey === "price") {
+        aValue = parseFloat(a.price);
+        bValue = parseFloat(b.price);
+      } else {
+        aValue = (a as any)[sortKey]?.toString().toLowerCase();
+        bValue = (b as any)[sortKey]?.toString().toLowerCase();
+      }
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
     });
   }
 
-  // Show "no products" message if none found
+  // Show "no products" message if needed.
   if (filteredProducts.length === 0) {
     const filters = [
       { id: "filterId", label: "Product ID" },
@@ -156,53 +138,46 @@ function renderProductCards(): void {
       { id: "filterDescription", label: "Description" },
       { id: "filterPrice", label: "Price" },
     ];
-    const activeFilter = filters.find(
-      (f) =>
-        (
-          (document.getElementById(f.id) as HTMLInputElement).value || ""
-        ).trim() !== ""
-    );
+    const activeFilter = filters.find((f) => {
+      const inputEl = document.getElementById(f.id) as HTMLInputElement | null;
+      return inputEl && inputEl.value.trim() !== "";
+    });
     if (activeFilter) {
-      const filterValue = (
-        document.getElementById(activeFilter.id) as HTMLInputElement
-      ).value.trim();
-      noProductsMessage.innerText = `No products found for ${activeFilter.label} "${filterValue}".`;
+      const inputEl = document.getElementById(
+        activeFilter.id
+      ) as HTMLInputElement;
+      noProductsMessage.innerText = `No products found for ${
+        activeFilter.label
+      } "${inputEl.value.trim()}".`;
     } else {
       noProductsMessage.innerText = "No products found.";
     }
-    noProductsMessage.style.display = "block";
+    (noProductsMessage as HTMLElement).style.display = "block";
   } else {
-    noProductsMessage.style.display = "none";
+    (noProductsMessage as HTMLElement).style.display = "none";
   }
 
   // Pagination calculations.
-  const totalProducts: number = filteredProducts.length;
-  const totalPages: number = Math.ceil(totalProducts / productsPerPage);
-
-  // Ensure currentPage stays within the valid range.
+  const totalProducts = filteredProducts.length;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
   if (currentPage > totalPages) currentPage = totalPages;
   if (currentPage < 1) currentPage = 1;
 
-  const startIndex: number = (currentPage - 1) * productsPerPage;
-  const paginatedProducts: Product[] = filteredProducts.slice(
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const paginatedProducts = filteredProducts.slice(
     startIndex,
     startIndex + productsPerPage
   );
 
-  // Update header pagination info dynamically.
-  const paginationInfo = document.getElementById(
-    "paginationInfo"
-  ) as HTMLElement | null;
+  // Update header pagination info.
+  const paginationInfo = document.getElementById("paginationInfo");
   if (paginationInfo) {
-    const startCount: number = totalProducts > 0 ? startIndex + 1 : 0;
-    const endCount: number = Math.min(
-      startIndex + productsPerPage,
-      totalProducts
-    );
+    const startCount = totalProducts > 0 ? startIndex + 1 : 0;
+    const endCount = Math.min(startIndex + productsPerPage, totalProducts);
     paginationInfo.textContent = `Products ${startCount}-${endCount} of ${totalProducts}`;
   }
 
-  // Render each product card for the current page
+  // Render product cards.
   paginatedProducts.forEach((product) => {
     const card = document.createElement("div");
     card.className = "col-md-6 mb-4";
@@ -216,7 +191,7 @@ function renderProductCards(): void {
           <p class="card-text">${product.description}</p>
         </div>
         <div class="card-footer d-flex justify-content-between">
-          <a href="product2.html?mode=edit&id=${product.id}" class="btn btn-sm btn-info">Edit</a>
+          <a href="product.html?mode=edit&id=${product.id}" class="btn btn-sm btn-info">Edit</a>
           <button class="btn btn-sm btn-danger" onclick="confirmDelete('${product.id}')">Delete</button>
         </div>
       </div>
@@ -224,52 +199,45 @@ function renderProductCards(): void {
     container.appendChild(card);
   });
 
-  // Update pagination controls
-  renderPaginationControls(filteredProducts.length);
+  renderPaginationControls(totalProducts);
 }
 
 function renderPaginationControls(totalProducts: number): void {
   const paginationContainer = document.querySelector(
     "ul.pagination"
-  ) as HTMLElement;
+  ) as HTMLElement | null;
   if (!paginationContainer) return;
 
-  if (totalProducts === 0) {
-    paginationContainer.style.display = "none";
-    return;
-  } else {
-    paginationContainer.style.display = "flex";
-  }
-
+  paginationContainer.style.display = totalProducts === 0 ? "none" : "flex";
   paginationContainer.classList.add("pagination-container");
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   paginationContainer.innerHTML = "";
 
-  // Previous button
+  // Previous button.
   const prevLi = document.createElement("li");
   prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
   const prevLink = document.createElement("a");
   prevLink.className = "page-link";
   prevLink.href = "#";
   prevLink.textContent = "Previous";
-  prevLink.dataset.page = (currentPage - 1).toString();
+  prevLink.dataset.page = String(currentPage - 1);
   prevLi.appendChild(prevLink);
   paginationContainer.appendChild(prevLi);
 
-  // Page number buttons
+  // Page number buttons.
   for (let i = 1; i <= totalPages; i++) {
     const li = document.createElement("li");
     li.className = `page-item ${i === currentPage ? "active" : ""}`;
     const a = document.createElement("a");
     a.className = "page-link";
     a.href = "#";
-    a.textContent = i.toString();
-    a.dataset.page = i.toString();
+    a.textContent = String(i);
+    a.dataset.page = String(i);
     li.appendChild(a);
     paginationContainer.appendChild(li);
   }
 
-  // Next button
+  // Next button.
   const nextLi = document.createElement("li");
   nextLi.className = `page-item ${
     currentPage === totalPages ? "disabled" : ""
@@ -278,15 +246,17 @@ function renderPaginationControls(totalProducts: number): void {
   nextLink.className = "page-link";
   nextLink.href = "#";
   nextLink.textContent = "Next";
-  nextLink.dataset.page = (currentPage + 1).toString();
+  nextLink.dataset.page = String(currentPage + 1);
   nextLi.appendChild(nextLink);
   paginationContainer.appendChild(nextLi);
 
-  // Attach event listeners to the pagination links.
-  paginationContainer.querySelectorAll("a.page-link").forEach((link) => {
+  // Pagination link event listeners.
+  const pageLinks = paginationContainer.querySelectorAll("a.page-link");
+  pageLinks.forEach((link) => {
     link.addEventListener("click", (e: Event) => {
       e.preventDefault();
-      const page = parseInt((link as HTMLAnchorElement).dataset.page || "1");
+      const target = e.currentTarget as HTMLAnchorElement;
+      const page = parseInt(target.dataset.page || "0", 10);
       if (!isNaN(page)) {
         changePage(page);
       }
@@ -294,100 +264,56 @@ function renderPaginationControls(totalProducts: number): void {
   });
 }
 
-// Function to handle page change
 function changePage(page: number): void {
   currentPage = page;
   renderProductCards();
 }
 
-function confirmDelete(id: string): void {
-  deleteProductId = id;
-  const deleteModal = document.getElementById("deleteModal") as HTMLElement;
-  if (deleteModal) {
-    deleteModalInstance = new bootstrap.Modal(deleteModal);
+(window as any).confirmDelete = (productId: string): void => {
+  deleteProductId = productId;
+  const modalEl = document.getElementById("deleteConfirmModal");
+  if (modalEl) {
+    deleteModalInstance = new bootstrap.Modal(modalEl);
     deleteModalInstance.show();
   }
-}
+};
 
-function handleDelete() {
-  if (deleteProductId) {
-    products = products.filter((product) => product.id !== deleteProductId);
-    saveProducts(products);
-    renderProductCards();
-    deleteModalInstance?.hide();
-  }
-}
-
-// Function to handle confirming deletion
-const confirmBtn = document.getElementById(
-  "confirmDeleteBtn"
-) as HTMLElement | null;
+const confirmBtn = document.getElementById("confirmDeleteBtn");
 if (confirmBtn) {
   confirmBtn.addEventListener("click", () => {
-    console.log("Confirm delete button clicked");
     if (deleteProductId) {
-      console.log("Deleting product with ID:", deleteProductId);
-      // Proceed with the deletion process
       products = products.filter((product) => product.id !== deleteProductId);
-      saveProducts(products); // Pass the updated products array to saveProducts
-      renderProductCards(); // Assuming renderProductCards function is defined elsewhere
+      saveToStorage(products);
+      renderProductCards();
       if (deleteModalInstance) {
-        deleteModalInstance.hide(); // Close the delete modal
+        deleteModalInstance.hide();
       }
-      // Show success modal
-      console.log("Showing success modal after deletion");
       showSuccessModal("Product deleted successfully!");
       deleteProductId = null;
-    } else {
-      console.log("No product to delete. deleteProductId is null.");
     }
   });
 }
 
-// Function to show a success modal with a message
-function showSuccessModal(message: string): void {
-  const successModal = new bootstrap.Modal(
-    document.getElementById("successModal") as HTMLElement
-  );
-  const successMessageElement = document.getElementById(
-    "successModalMessage"
-  ) as HTMLElement;
-  if (successMessageElement) {
-    successMessageElement.textContent = message;
-  }
-  successModal.show();
-}
-
-// Function to clear all filters and reset the view
-function clearFilters(): void {
-  const filterId = document.getElementById(
-    "filterId"
-  ) as HTMLInputElement | null;
-  const filterName = document.getElementById(
+(window as any).clearFilters = (): void => {
+  const filterIdEl = document.getElementById("filterId") as HTMLInputElement;
+  const filterNameEl = document.getElementById(
     "filterName"
-  ) as HTMLInputElement | null;
-  const filterDescription = document.getElementById(
+  ) as HTMLInputElement;
+  const filterDescriptionEl = document.getElementById(
     "filterDescription"
-  ) as HTMLInputElement | null;
-  const filterPrice = document.getElementById(
+  ) as HTMLInputElement;
+  const filterPriceEl = document.getElementById(
     "filterPrice"
-  ) as HTMLInputElement | null;
-  const sortBy = document.getElementById("sortBy") as HTMLSelectElement | null;
-  const sortOrder = document.getElementById(
-    "sortOrder"
-  ) as HTMLSelectElement | null;
+  ) as HTMLInputElement;
+  const sortByEl = document.getElementById("sortBy") as HTMLSelectElement;
+  const sortOrderEl = document.getElementById("sortOrder") as HTMLSelectElement;
 
-  if (filterId) filterId.value = "";
-  if (filterName) filterName.value = "";
-  if (filterDescription) filterDescription.value = "";
-  if (filterPrice) filterPrice.value = "";
-  if (sortBy) sortBy.value = "";
-  if (sortOrder) sortOrder.value = "asc";
-
+  filterIdEl.value = "";
+  filterNameEl.value = "";
+  filterDescriptionEl.value = "";
+  filterPriceEl.value = "";
+  sortByEl.value = "";
+  sortOrderEl.value = "asc";
   currentPage = 1;
-  renderProductCards(); // Assuming renderProductCards function is defined elsewhere
-}
-
-(window as any).clearFilters = clearFilters;
-(window as any).confirmDelete = confirmDelete;
-(window as any).showSuccessModal = showSuccessModal;
+  renderProductCards();
+};

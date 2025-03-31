@@ -1,5 +1,11 @@
 "use strict";
 
+import {
+  loadProducts as loadFromStorage,
+  saveProducts as saveToStorage,
+} from "./storage.js";
+import { showSuccessModal } from "./modal.js";
+
 let products = [];
 let deleteProductId = null;
 let currentPage = 1;
@@ -7,7 +13,7 @@ const productsPerPage = 4;
 let deleteModalInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
+  products = loadFromStorage();
   renderProductCards();
 
   // Show the "Add Product" button if it exists.
@@ -16,48 +22,44 @@ document.addEventListener("DOMContentLoaded", () => {
     addBtn.classList.remove("d-none");
   }
 
-  // Attach event listeners to filters and sort controls so that changes trigger a re-render.
-  document.getElementById("filterId").addEventListener("input", () => {
+  // Attach event listeners to filters and sort controls.
+  const filterIdEl = document.getElementById("filterId");
+  const filterNameEl = document.getElementById("filterName");
+  const filterDescriptionEl = document.getElementById("filterDescription");
+  const filterPriceEl = document.getElementById("filterPrice");
+  const sortByEl = document.getElementById("sortBy");
+  const sortOrderEl = document.getElementById("sortOrder");
+
+  filterIdEl?.addEventListener("input", () => {
     currentPage = 1;
     renderProductCards();
   });
-  document.getElementById("filterName").addEventListener("input", () => {
+  filterNameEl?.addEventListener("input", () => {
     currentPage = 1;
     renderProductCards();
   });
-  document.getElementById("filterDescription").addEventListener("input", () => {
+  filterDescriptionEl?.addEventListener("input", () => {
     currentPage = 1;
     renderProductCards();
   });
-  document.getElementById("filterPrice").addEventListener("input", () => {
+  filterPriceEl?.addEventListener("input", () => {
     currentPage = 1;
     renderProductCards();
   });
-  document.getElementById("sortBy").addEventListener("change", () => {
+  sortByEl?.addEventListener("change", () => {
     currentPage = 1;
     renderProductCards();
   });
-  document.getElementById("sortOrder").addEventListener("change", () => {
+  sortOrderEl?.addEventListener("change", () => {
     currentPage = 1;
     renderProductCards();
   });
 });
 
-// Load products from localStorage.
-function loadProducts() {
-  const storedProducts = localStorage.getItem("products");
-  products = storedProducts ? JSON.parse(storedProducts) : [];
-}
-
-// Save products to localStorage.
-function saveProducts() {
-  localStorage.setItem("products", JSON.stringify(products));
-}
-
-// Render product cards with filtering, sorting, and pagination.
 function renderProductCards() {
   const container = document.getElementById("productCardContainer");
   const noProductsMessage = document.getElementById("noProductsMessage");
+  if (!container || !noProductsMessage) return;
   container.innerHTML = "";
 
   // Get filter values.
@@ -72,7 +74,7 @@ function renderProductCards() {
     .toLowerCase();
   const filterPrice = document.getElementById("filterPrice").value.trim();
 
-  // Filter products based on criteria.
+  // Filter products.
   let filteredProducts = products.filter((product) => {
     return (
       (!filterId || product.id.toString().includes(filterId)) &&
@@ -83,15 +85,21 @@ function renderProductCards() {
     );
   });
 
-  // Sorting (if a sort key is selected).
-  const sortKey = document.getElementById("sortBy").value;
-  const sortOrder = document.getElementById("sortOrder").value;
+  // Sorting.
+  const sortByEl = document.getElementById("sortBy");
+  const sortOrderEl = document.getElementById("sortOrder");
+  const sortKey = sortByEl.value;
+  const sortOrder = sortOrderEl.value;
   if (sortKey) {
     filteredProducts.sort((a, b) => {
-      let aValue =
-        sortKey === "price" ? parseFloat(a[sortKey]) : a[sortKey].toLowerCase();
-      let bValue =
-        sortKey === "price" ? parseFloat(b[sortKey]) : b[sortKey].toLowerCase();
+      let aValue, bValue;
+      if (sortKey === "price") {
+        aValue = parseFloat(a.price);
+        bValue = parseFloat(b.price);
+      } else {
+        aValue = (a[sortKey] || "").toString().toLowerCase();
+        bValue = (b[sortKey] || "").toString().toLowerCase();
+      }
       return sortOrder === "asc"
         ? aValue > bValue
           ? 1
@@ -102,7 +110,7 @@ function renderProductCards() {
     });
   }
 
-  // Show "no products" message if none found.
+  // Show "no products" message if needed.
   if (filteredProducts.length === 0) {
     const filters = [
       { id: "filterId", label: "Product ID" },
@@ -110,12 +118,15 @@ function renderProductCards() {
       { id: "filterDescription", label: "Description" },
       { id: "filterPrice", label: "Price" },
     ];
-    const activeFilter = filters.find(
-      (f) => document.getElementById(f.id).value.trim() !== ""
-    );
+    const activeFilter = filters.find((f) => {
+      const inputEl = document.getElementById(f.id);
+      return inputEl && inputEl.value.trim() !== "";
+    });
     if (activeFilter) {
-      const filterValue = document.getElementById(activeFilter.id).value.trim();
-      noProductsMessage.innerText = `No products found for ${activeFilter.label} "${filterValue}".`;
+      const inputEl = document.getElementById(activeFilter.id);
+      noProductsMessage.innerText = `No products found for ${
+        activeFilter.label
+      } "${inputEl.value.trim()}".`;
     } else {
       noProductsMessage.innerText = "No products found.";
     }
@@ -136,7 +147,7 @@ function renderProductCards() {
     startIndex + productsPerPage
   );
 
-  // Update header pagination info dynamically.
+  // Update header pagination info.
   const paginationInfo = document.getElementById("paginationInfo");
   if (paginationInfo) {
     const startCount = totalProducts > 0 ? startIndex + 1 : 0;
@@ -144,7 +155,7 @@ function renderProductCards() {
     paginationInfo.textContent = `Products ${startCount}-${endCount} of ${totalProducts}`;
   }
 
-  // Render each product card for the current page.
+  // Render product cards.
   paginatedProducts.forEach((product) => {
     const card = document.createElement("div");
     card.className = "col-md-6 mb-4";
@@ -166,7 +177,6 @@ function renderProductCards() {
     container.appendChild(card);
   });
 
-  // Update pagination controls.
   renderPaginationControls(totalProducts);
 }
 
@@ -174,13 +184,7 @@ function renderPaginationControls(totalProducts) {
   const paginationContainer = document.querySelector("ul.pagination");
   if (!paginationContainer) return;
 
-  if (totalProducts === 0) {
-    paginationContainer.style.display = "none";
-    return;
-  } else {
-    paginationContainer.style.display = "flex";
-  }
-
+  paginationContainer.style.display = totalProducts === 0 ? "none" : "flex";
   paginationContainer.classList.add("pagination-container");
   const totalPages = Math.ceil(totalProducts / productsPerPage);
   paginationContainer.innerHTML = "";
@@ -192,7 +196,7 @@ function renderPaginationControls(totalProducts) {
   prevLink.className = "page-link";
   prevLink.href = "#";
   prevLink.textContent = "Previous";
-  prevLink.dataset.page = currentPage - 1;
+  prevLink.dataset.page = String(currentPage - 1);
   prevLi.appendChild(prevLink);
   paginationContainer.appendChild(prevLi);
 
@@ -203,8 +207,8 @@ function renderPaginationControls(totalProducts) {
     const a = document.createElement("a");
     a.className = "page-link";
     a.href = "#";
-    a.textContent = i;
-    a.dataset.page = i;
+    a.textContent = String(i);
+    a.dataset.page = String(i);
     li.appendChild(a);
     paginationContainer.appendChild(li);
   }
@@ -218,78 +222,68 @@ function renderPaginationControls(totalProducts) {
   nextLink.className = "page-link";
   nextLink.href = "#";
   nextLink.textContent = "Next";
-  nextLink.dataset.page = currentPage + 1;
+  nextLink.dataset.page = String(currentPage + 1);
   nextLi.appendChild(nextLink);
   paginationContainer.appendChild(nextLi);
 
-  // Attach event listeners to the pagination links.
-  paginationContainer.querySelectorAll("a.page-link").forEach((link) => {
-    link.addEventListener("click", function (e) {
+  // Pagination link event listeners.
+  const pageLinks = paginationContainer.querySelectorAll("a.page-link");
+  pageLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
       e.preventDefault();
-      const page = parseInt(this.dataset.page);
+      const target = e.currentTarget;
+      const page = parseInt(target.dataset.page || "0", 10);
       if (!isNaN(page)) {
         changePage(page);
       }
     });
   });
 }
-// Function to handle page change
+
 function changePage(page) {
   currentPage = page;
   renderProductCards();
 }
 
-function confirmDelete(productId) {
+window.confirmDelete = (productId) => {
   deleteProductId = productId;
   const modalEl = document.getElementById("deleteConfirmModal");
   if (modalEl) {
     deleteModalInstance = new bootstrap.Modal(modalEl);
     deleteModalInstance.show();
   }
-}
+};
 
 const confirmBtn = document.getElementById("confirmDeleteBtn");
 if (confirmBtn) {
   confirmBtn.addEventListener("click", () => {
-    console.log("Confirm delete button clicked");
     if (deleteProductId) {
-      console.log("Deleting product with ID:", deleteProductId);
-      // Proceed with the deletion process
       products = products.filter((product) => product.id !== deleteProductId);
-      saveProducts();
+      saveToStorage(products);
       renderProductCards();
       if (deleteModalInstance) {
-        deleteModalInstance.hide(); // Close the delete modal
+        deleteModalInstance.hide();
       }
-      // Show success modal
-      console.log("Showing success modal after deletion");
       showSuccessModal("Product deleted successfully!");
       deleteProductId = null;
-    } else {
-      console.log("No product to delete. deleteProductId is null.");
     }
   });
 }
 
-function showSuccessModal(message) {
-  const successModal = new bootstrap.Modal(
-    document.getElementById("successModal")
-  );
-  document.getElementById("successModalMessage").textContent = message;
-  successModal.show();
-}
+window.clearFilters = () => {
+  const filterIdEl = document.getElementById("filterId");
+  const filterNameEl = document.getElementById("filterName");
+  const filterDescriptionEl = document.getElementById("filterDescription");
+  const filterPriceEl = document.getElementById("filterPrice");
+  const sortByEl = document.getElementById("sortBy");
+  const sortOrderEl = document.getElementById("sortOrder");
 
-function clearFilters() {
-  document.getElementById("filterId").value = "";
-  document.getElementById("filterName").value = "";
-  document.getElementById("filterDescription").value = "";
-  document.getElementById("filterPrice").value = "";
-  document.getElementById("sortBy").value = "";
-  document.getElementById("sortOrder").value = "asc";
+  filterIdEl.value = "";
+  filterNameEl.value = "";
+  filterDescriptionEl.value = "";
+  filterPriceEl.value = "";
+  sortByEl.value = "";
+  sortOrderEl.value = "asc";
   currentPage = 1;
   renderProductCards();
-}
-
-window.clearFilters = clearFilters;
-window.confirmDelete = confirmDelete;
-// window.showSuccessModal = showSuccessModal;
+};
