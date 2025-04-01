@@ -1,6 +1,5 @@
 "use strict";
 
-// Declare the global bootstrap variable to avoid TypeScript errors
 declare var bootstrap: any;
 
 import {

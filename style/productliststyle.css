@@ -85,7 +85,7 @@ label {
   font-weight: bold;
 }
 
-/* Optional: Hover effect for non-active links */
+/* Hover effect for non-active links */
 .pagination .page-link:hover {
   background-color: #f0f0f0;
 }
@@ -123,11 +123,9 @@ label {
   overflow: hidden;
   background-color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -135,11 +133,6 @@ label {
 .card-img-top {
   padding: 1rem;
   background-color: #f8f9fa;
-  transition: transform 0.3s ease;
-}
-
-.card:hover .card-img-top {
-  transform: scale(1.05);
 }
 
 /* Card Body Styling */
@@ -154,6 +147,7 @@ label {
   margin-bottom: 0.5rem;
   color: #343a40;
 }
+
 /* Card Text */
 .card-text {
   color: #555;
