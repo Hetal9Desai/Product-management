@@ -1,2 +1,9 @@
-# Ignore node_modules
+
 node_modules/
+dist/
+
+
+.vscode/*
+!.vscode/extensions.json
+
+!.vscode/extensions.json
