@@ -1,0 +1,29 @@
+{
+  "name": "product-management",
+  "version": "1.0.0",
+  "description": "This is a **Product Management System** built using **HTML, Bootstrap for CSS, and JavaScript**. The application allows users to create, update, view, and manage products with **localStorage** for data persistence. It also supports **filtering, sorting, and routing for product view/edit** operations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hetal9Desai/Product-management.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hetal9Desai/Product-management/issues"
+  },
+  "homepage": "https://github.com/Hetal9Desai/Product-management#readme",
+  "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
+    "@types/jquery": "^3.5.32"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3"
+  }
+}
