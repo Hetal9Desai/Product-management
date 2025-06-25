@@ -42,6 +42,7 @@ This is a **Product Management System** built using **HTML, CSS, Bootstrap, and 
 - **Sort Products:** Choose a sorting option (ID, Name, or Price) from the dropdown.
 - **Clear Storage:** Click **Clear Storage** to remove all stored products.
 
+
 ## Installation and Running the Project
 
 1. Clone the Repository:
@@ -69,6 +70,8 @@ This is a **Product Management System** built using **HTML, CSS, Bootstrap, and 
    b. Using a Local Server: It’s recommended to run the project on a local server to avoid potential issues with modules and CORS. For example, you can use VSCode’s Live Server extension:
 
    Right-click on index.html and choose "Open with Live Server".
+
+
 
 ### TEST LINK :
 
